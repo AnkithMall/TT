@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.5/xlsx.min.js"></script>
+  </head>
+  <body>
+
+    <div id="mydiv">
+      
+        <input type="file" id="file_upload" />
+        <button onclick="upload()">Upload</button>
+        
+    </div>
+    <div id="display_excel_data"></div>
+    <script type="text/babel">
+        //Method to display the data in HTML Table
+        /*function displayJsonToHtmlTable(jsonData){
+            var table=document.getElementById("display_excel_data");
+            if(jsonData.length>0){
+                var htmlData='<tr><th>Course name</th><th>Course ID</th></tr>';
+                for(var i=0;i<jsonData.length;i++){
+                    var row=jsonData[i];
+                    htmlData+='<tr><td>'+row["course name"]+'</td><td>'+row["course ID"] +'</td></tr>';
+                }
+                table.innerHTML=htmlData;
+            }else{
+                table.innerHTML='There is no data in Excel';
+            }
+        }*/
+        let jsondata ;
+        function excelFileToJSON(file){
+            try {
+                var reader = new FileReader();
+                reader.readAsBinaryString(file);
+                reader.onload = function(e) {
+                    var data = e.target.result;
+                    var workbook = XLSX.read(data, {
+                        type : 'binary'
+                    });
+                    var result = {};
+                    var firstSheetName = workbook.SheetNames[0];
+                    //reading only first sheet data
+                    var jsonData = XLSX.utils.sheet_to_json(workbook.Sheets[firstSheetName]);
+                    alert(JSON.stringify(jsonData));
+                    //displaying the json result into HTML table
+                    displayJsonToHtmlTable(jsonData);
+                    jsondata = JSON.stringify(jsonData) ;
+                }
+            }catch(e){
+                console.error(e);
+            }
+        }
+        function upload() {
+            var files = document.getElementById('file_upload').files;
+            if(files.length==0){
+                alert("Please choose any file...");
+                return;
+            }
+            var filename = files[0].name ;
+            var extension = filename.substring(filename.lastIndexOf(".")).toUpperCase();
+            if (extension == '.XLS' || extension == '.XLSX') {
+                //Here calling another method to read excel file into json
+                excelFileToJSON(files[0]);
+            }else{
+                alert("Please select a valid excel file.");
+            }
+        }
+        function MyForm() {
+            return (
+                <form>
+                    <span>hidden</span>
+                    <input type="hidden" name="jsonstr" value={jsondata} />
+                </form>
+            )
+        }
+        const root = ReactDOM.createRoot(document.getElementById('display_excel_data'));
+        root.render(<MyForm />);
+     /* function Hello() {
+        return <h1>Hello World!</h1>;
+      }*/
+      
+      //ReactDOM.render(<Hello />, document.getElementById('mydiv'))
+    </script>
+
+  </body>
+</html>
